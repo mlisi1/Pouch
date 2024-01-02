@@ -1,5 +1,5 @@
 import os
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 from threading import Thread
 
 from io import BytesIO
@@ -47,13 +47,14 @@ class ModulesImageHandler():
                 self.parent.image.canvas.image = tk_image
                 self.parent.image.canvas.config(image = tk_image)
 
+            else:
 
+                self.parent.image.canvas.image = self.parent.image.blank
+                self.parent.image.canvas.config(image = self.parent.image.blank)
+                if self.download_thread == None:
 
-
-        if self.download_thread == None:
-
-            self.download_thread = Thread(target=self.download_thread_fn, args=(url, selection, ))
-            self.download_thread.start()
+                    self.download_thread = Thread(target=self.download_thread_fn, args=(url, selection, ))
+                    self.download_thread.start()
 
 
 
@@ -69,12 +70,13 @@ class ModulesImageHandler():
             print(f"Error downloading image: {e}")
             self.selection = "Failed"
             
-        
-
-        # Open the image from the response content using PIL
         try:
             img = Image.open(BytesIO(response.content))
+            
+            img = ImageOps.expand(img, border=(int(max(img.size)/6), int(max(img.size)/6)), fill='white')
+
             img = img.resize((256, 256))
+
             img.save(os.path.join('.cache/modules', f'{name}.jpg'), )
 
             self.selection = name

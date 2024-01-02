@@ -114,7 +114,7 @@ class EntriesSection(ttk.Frame):
         self.selection = None
         self.changed = False
         self.entries_widget.bind("<<TreeviewSelect>>", self.on_select)
-        # self.entries_widget.column(1, anchor="w", width=60)
+ 
 
 
     def update_entries(self):
@@ -209,27 +209,10 @@ class ImageSection(ttk.Frame):
         self.label = ttk.Label(self, text="Image:")
         self.label.grid(row=0, column=0, sticky = 'nw', pady = (5,3))
 
-        
-        
-
-
         self.blank = ImageTk.PhotoImage(Image.open(r'res/blank.jpg'))
         self.canvas = tk.Label(self, image=self.blank)
 
-        # self.canvas.image = self.blank  
-        # self.canvas.configure(image=self.blank)
-
-        # self.container = self.canvas.create_image(0, 0, image = blank, anchor = 'w')
-        # self.canvas.itemconfig(self.container, anchor='nw')
         self.canvas.grid(row=2, column=0, padx=10, pady=10)
-     
-
-        # self.canvas.bind("<Configure>", self.draw_canvas)
-
-    def draw_canvas(self, event):
-        # Update the canvas size and redraw the image when the canvas is resized
-        
-        self.canvas.itemconfig(self.container, anchor='nw')
 
 
 
