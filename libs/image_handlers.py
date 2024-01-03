@@ -1,15 +1,17 @@
 import os
-from PIL import Image, ImageTk, ImageOps
+from PIL import Image, ImageTk, ImageOps, ImageDraw
 from threading import Thread
 
 from io import BytesIO
 
 import requests
 
+import copy
 
 
 
-class ModulesImageHandler():
+
+class WebImageHandler():
 
     def __init__(self, sheets, parent):
 
@@ -17,7 +19,7 @@ class ModulesImageHandler():
         self.image = None
         self.parent = parent
  
-        self.loaded = False
+        self.done_task = False
         self.download_thread = None
         self.selection = None
 
@@ -85,7 +87,7 @@ class ModulesImageHandler():
             print(f"Error opening image: {e}")
             self.selection = "Failed"
 
-        self.loaded = True
+        self.done_task = True
             
 
 
@@ -95,7 +97,7 @@ class ModulesImageHandler():
 
             self.download_thread.join()
 
-            self.loaded = False
+            self.done_task = False
             
             if not self.selection == "Failed":
 
@@ -104,3 +106,104 @@ class ModulesImageHandler():
             self.selection = None
 
             self.download_thread = None
+
+
+
+
+
+
+class ResistorsImageHandler():
+
+    def __init__(self, sheets, parent):
+
+        self.parent = parent
+
+        self.done_task = False
+
+        self.coding = {1:"black", 10:"brown", 100:"red", 1000:"orange", 10000:"yellow", 100000:"green",
+                        1000000:"blue", 1000000:"purple", 0.1:"gold", 0.01:"silver"}
+
+        self.multipliers = {"M":1000000, "K":1000, "":1}
+
+        self.digits_colors = ["black", "brown", "red", "orange", "yellow", "green",
+                                "blue", "purple", "grey", "white", "gold", "silver"]
+        
+        self.band_sizes = [(9, 44), (9, 34), (9, 34), (9, 34), (9, 43)]
+        self.band_positions = [(68, 107), (94, 112), (116,112), (137, 112), (163, 108)]
+
+        self.base_resistor_image = Image.open('res/resistor_small.jpg')
+        self.resistor_image = Image.open('res/resistor_small.jpg')
+
+        self.tk_image = ImageTk.PhotoImage(self.base_resistor_image)      
+
+        self.parent.image.canvas.image = self.tk_image
+        self.parent.image.canvas.config(image = self.tk_image)
+        
+    
+    def handle_selection(self, selection):
+
+        digits = float(selection.split(' ')[0])
+        multiplier = selection.split(' ')[1].strip("Ω")
+        multiplier = self.multipliers[multiplier]
+
+        value = digits * multiplier
+        key = self.find_divisor(value)
+
+        truncated_digits = str(value/key)
+
+        colors = []
+
+        for i, digit in enumerate(truncated_digits):
+
+            if i < 3:
+
+                colors.append(self.digits_colors[int(digit)])
+
+        colors.append(self.coding[key])
+        colors.append('brown')
+
+        for i in range(5):
+
+            self.draw_rectangle(self.resistor_image, self.band_positions[i], self.band_sizes[i], colors[i])
+
+
+        self.done_task = True 
+
+            
+
+      
+
+
+    def find_divisor(self, number):
+
+        for key in self.coding.keys():
+            result = number / key
+            if result / 100 >= 1 and result / 100 <= 10:
+                return key
+
+        return None
+
+    def update_images(self):
+
+        self.tk_image = ImageTk.PhotoImage(self.resistor_image)      
+
+        self.parent.image.canvas.image = self.tk_image
+        self.parent.image.canvas.config(image = self.tk_image)
+
+        self.resistor_image = copy.deepcopy(self.base_resistor_image)
+        self.done_task = False
+
+
+
+
+    def draw_rectangle(self, image, position, size, color):
+        # Create a drawing object
+        draw = ImageDraw.Draw(image)
+
+        # Calculate the coordinates of the rectangle
+        x1, y1 = position
+        x2, y2 = x1 + size[0], y1 + size[1]
+
+        # Draw the rectangle
+        draw.rectangle([x1, y1, x2, y2], fill=color)
+

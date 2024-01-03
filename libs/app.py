@@ -12,7 +12,7 @@ from tkinter import ttk
 from threading import Thread
 
 from widgets import Categories, InfoBase, SearchBox, ComponentManager
-from image_handlers import ModulesImageHandler
+from image_handlers import WebImageHandler, ResistorsImageHandler
 
 import numpy as np
 
@@ -71,7 +71,7 @@ class PouchApp(tk.Tk):
             self.info_section.details.update_details(self.info_section.entries.selection)
             self.info_section.entries.changed = False
 
-        if not self.info_section == None and not self.info_section.image_handler == None and self.info_section.image_handler.loaded:
+        if not self.info_section == None and not self.info_section.image_handler == None and self.info_section.image_handler.done_task:
 
             self.info_section.image_handler.update_images()
             
@@ -122,7 +122,7 @@ class PouchApp(tk.Tk):
 
             self.sheets[sheet_name] = sheet
 
-            # break
+            break
             
         
 
@@ -190,7 +190,11 @@ class PouchApp(tk.Tk):
 
         if selection == "Modules":
 
-            self.info_section.image_handler = ModulesImageHandler(self.sheets[selection], self.info_section)
+            self.info_section.image_handler = WebImageHandler(self.sheets[selection], self.info_section)
+
+        if selection == "Resistors":
+
+            self.info_section.image_handler = ResistorsImageHandler(self.sheets[selection], self.info_section)
 
         
 
